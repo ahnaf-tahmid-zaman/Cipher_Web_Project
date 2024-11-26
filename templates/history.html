@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>History</title>
+</head>
+<body>
+    <h1>Your History</h1>
+    <table>
+        <tr>
+            <th>Cipher Type</th>
+            <th>Operation</th>
+            <th>Input Text</th>
+            <th>Key</th>
+            <th>Result</th>
+            <th>Timestamp</th>
+        </tr>
+        {% for entry in history %}
+        <tr>
+            <td>{{ entry.cipher_type }}</td>
+            <td>{{ entry.operation }}</td>
+            <td>{{ entry.input_text }}</td>
+            <td>{{ entry.key }}</td>
+            <td>{{ entry.result }}</td>
+            <td>{{ entry.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

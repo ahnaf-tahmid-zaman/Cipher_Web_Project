@@ -1,8 +1,27 @@
-from flask import Flask, render_template, request, jsonify
-import webbrowser
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, History
 import os
+import webbrowser
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"
+
+# Database Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cipher.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+# Login Manager
+login_manager = LoginManager()
+login_manager.login_view = "login"
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Cipher Functions
 def additive_encrypt(plain_text, key):
@@ -116,10 +135,51 @@ def vigenere_decrypt(encrypted_text, key):
     return decrypted_text
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # Use pbkdf2:sha256 hashing method
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        
+        # Check if username exists
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists!")
+            return redirect(url_for('register'))
+        
+        new_user = User(username=username, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash("Registration successful! Please log in.")
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('index'))
+        flash("Invalid username or password!")
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.")
+    return redirect(url_for('login'))
+
 @app.route('/cipher', methods=['POST'])
+@login_required
 def cipher():
     data = request.json
     cipher_type = data['cipher_type']
@@ -127,8 +187,9 @@ def cipher():
     text = data['text']
     key = data.get('key')
     key2 = data.get('key2')
-    result = ""
 
+    result = ""
+    # Logic for selecting cipher function
     if cipher_type == "additive":
         if operation == "encrypt":
             result = additive_encrypt(text, int(key))
@@ -155,13 +216,27 @@ def cipher():
         else:
             result = vigenere_decrypt(text, key)
 
+    # Save history to database
+    new_history = History(user_id=current_user.id, cipher_type=cipher_type, operation=operation,
+                          input_text=text, key=key, result=result)
+    db.session.add(new_history)
+    db.session.commit()
+
     return jsonify({"result": result})
 
+@app.route('/history')
+@login_required
+def history():
+    history_data = History.query.filter_by(user_id=current_user.id).all()
+    return render_template('history.html', history=history_data)
+
 def open_browser():
-    """Open the default web browser to the application URL."""
     webbrowser.open_new("http://127.0.0.1:5000/")
 
 if __name__ == "__main__":
+    if not os.path.exists('cipher.db'):
+        with app.app_context():
+            db.create_all()
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         open_browser()
     app.run(debug=True)
