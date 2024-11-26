@@ -3,46 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cipher Web Project</title>
-    <!-- Corrected link to styles.css -->
+    <title>Cipher Encryption/Decryption</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="container">
+    <div class="form-container">
         <h1>Cipher Encryption/Decryption</h1>
-        <form id="cipherForm">
-            <label for="cipherType">Choose Cipher:</label>
-            <select id="cipherType" name="cipher_type" required>
-                <option value="additive">Additive Cipher</option>
-                <option value="multiplicative">Multiplicative Cipher</option>
-                <option value="affine">Affine Cipher</option>
-                <option value="monoalphabetic">Monoalphabetic Cipher</option>
-                <option value="vigenere">Polyalphabetic Cipher (Vigenere)</option>
-            </select>
+        <form id="cipherForm" class="form">
+            <div class="form-group">
+                <label for="cipherType">Choose Cipher:</label>
+                <select id="cipherType" name="cipher_type" required>
+                    <option value="additive">Additive Cipher</option>
+                    <option value="multiplicative">Multiplicative Cipher</option>
+                    <option value="affine">Affine Cipher</option>
+                    <option value="monoalphabetic">Monoalphabetic Cipher</option>
+                    <option value="vigenere">Polyalphabetic Cipher (Vigenere)</option>
+                </select>
+            </div>
 
-            <label for="operation">Operation:</label>
-            <select id="operation" name="operation" required>
-                <option value="encrypt">Encrypt</option>
-                <option value="decrypt">Decrypt</option>
-            </select>
+            <div class="form-group">
+                <label for="operation">Operation:</label>
+                <select id="operation" name="operation" required>
+                    <option value="encrypt">Encrypt</option>
+                    <option value="decrypt">Decrypt</option>
+                </select>
+            </div>
 
-            <label for="text">Text:</label>
-            <input type="text" id="text" name="text" placeholder="Enter your text" required>
+            <div class="form-group">
+                <label for="text">Text:</label>
+                <input type="text" id="text" name="text" placeholder="Enter your text" required>
+            </div>
 
-            <label for="key">Key:</label>
-            <input type="text" id="key" name="key" placeholder="Enter your key" required>
+            <div class="form-group">
+                <label for="key">Key:</label>
+                <input type="text" id="key" name="key" placeholder="Enter your key" required>
+            </div>
 
-            <label for="key2" id="key2Label" style="display: none;">Second Key (for Affine):</label>
-            <input type="number" id="key2" name="key2" placeholder="Enter second key" style="display: none;">
+            <div class="form-group">
+                <label for="key2" id="key2Label" style="display: none;">Second Key (for Affine):</label>
+                <input type="number" id="key2" name="key2" placeholder="Enter second key" style="display: none;">
+            </div>
 
-            <button type="submit">Submit</button>
+            <button type="submit" class="btn">Submit</button>
         </form>
 
-        <h2>Result:</h2>
-        <div id="result"></div>
+        <div class="result">
+            <h2>Result:</h2>
+            <div id="result"></div>
+        </div>
+
+        <div class="history-link">
+            <a href="/history">View My History</a>
+        </div>
     </div>
 
-    <!-- JavaScript to dynamically handle key2 visibility -->
     <script>
         document.getElementById('cipherType').addEventListener('change', function () {
             const key2Label = document.getElementById('key2Label');
@@ -56,7 +70,6 @@
             }
         });
 
-        // JavaScript for form submission
         document.getElementById('cipherForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -76,7 +89,7 @@
                     operation: operation,
                     text: text,
                     key: key,
-                    key2: key2 || null // Send key2 only if provided
+                    key2: key2 || null
                 })
             })
             .then(response => response.json())

@@ -2,29 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <h1>Your History</h1>
-    <table>
-        <tr>
-            <th>Cipher Type</th>
-            <th>Operation</th>
-            <th>Input Text</th>
-            <th>Key</th>
-            <th>Result</th>
-            <th>Timestamp</th>
-        </tr>
-        {% for entry in history %}
-        <tr>
-            <td>{{ entry.cipher_type }}</td>
-            <td>{{ entry.operation }}</td>
-            <td>{{ entry.input_text }}</td>
-            <td>{{ entry.key }}</td>
-            <td>{{ entry.result }}</td>
-            <td>{{ entry.timestamp }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="form-container">
+        <h1>Your History</h1>
+        <div class="table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Cipher Type</th>
+                        <th>Operation</th>
+                        <th>Input Text</th>
+                        <th>Key(s)</th>
+                        <th>Result</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in history %}
+                    <tr>
+                        <td>{{ entry.cipher_type }}</td>
+                        <td>{{ entry.operation }}</td>
+                        <td>{{ entry.input_text }}</td>
+                        <td>
+                            {{ entry.key }}
+                            {% if entry.cipher_type == "affine" and entry.key2 %}
+                            , {{ entry.key2 }}
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.result }}</td>
+                        <td>{{ entry.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="/" class="btn back-btn">Back to Cipher</a>
+    </div>
 </body>
 </html>
